@@ -1,3 +1,6 @@
+# Curso de Node.js Microservices: NestJS, RabbitMQ and Cloud Services
+
+https://www.udemy.com/share/1031xw/
 ## Comandos Nest
 
 * Criar Módulo

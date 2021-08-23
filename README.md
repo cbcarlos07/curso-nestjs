@@ -39,6 +39,12 @@ useUnifiedTopology: é uma boa manter como true
 
 useFindAndModify: Desabilitar o método para fazer uso de outros
 
+# Pipe | Validação de campos
+
+  npm i class-validator class-transformer -S
+
+  https://github.com/typestack/class-validator
+
 
 
 

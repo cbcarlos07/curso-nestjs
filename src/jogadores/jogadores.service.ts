@@ -50,7 +50,7 @@ export class JogadoresService {
             throw new NotFoundException(`Jogador com e-mail ${email} não encontrado`)            
         }
         this.jogadores = this.jogadores.filter(jogador => jogador.email != email)        */
-        return this.jogadorModel.remove({email}).exec()
+        return this.jogadorModel.deleteOne({email}).exec()
     }
 
     private criar( criarJogadorDto: CriarJogadorDto ): Promise<Jogador> {

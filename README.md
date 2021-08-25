@@ -49,7 +49,16 @@ useFindAndModify: Desabilitar o método para fazer uso de outros
   https://github.com/typestack/class-validator
 
 
+# MongoDB
 
+return await this.categoriaModel.find().populate('jogadores').exec()
 
+populate('jogadores')
 
+Populate seria o inner join de um banco relacional
 
+Onde jogadores é a tabela referenciada ou documento
+
+Procurar dentro do documento
+
+categoriaModel.find({categoria}).where('jogadores').in(idJogador).exec()

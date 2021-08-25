@@ -37,7 +37,7 @@ export class JogadoresService {
     async consultarJogadoresPeloId(_id: string): Promise<Jogador>{
         const jogadorEncontrado = await this.verificaSeJogadorExiste(_id)
         if( !jogadorEncontrado ){
-            throw new NotFoundException(`Jogador com e-mail ${_id} não encontrado`)            
+            throw new NotFoundException(`Jogador com id ${_id} não encontrado`)            
         }
         return jogadorEncontrado
     }
@@ -50,8 +50,8 @@ export class JogadoresService {
         return this.jogadorModel.deleteOne({_id}).exec()
     }
 
-    private verificaSeJogadorExiste(_id){
-        const jogadorEncontrado = this.jogadorModel.findOne({_id}).exec()
-        return jogadorEncontrado ? jogadorEncontrado : jogadorEncontrado
+    private async verificaSeJogadorExiste(_id){
+        const jogadorEncontrado = await this.jogadorModel.findOne({_id}).exec()
+        return jogadorEncontrado 
     }
 }

@@ -5,10 +5,10 @@ import { Categoria } from './interfaces/categoria.interface';
 import { AtualizarCategoriaDto } from './dtos/atualizar-categoria.dto';
 import { CriarCategoriaDto } from './dtos/criar-categoria.dto';
 import { JogadoresService } from 'src/jogadores/jogadores.service';
+import { Jogador } from 'src/jogadores/interfaces/jogador.interface';
 
 @Injectable()
 export class CategoriasService {
-   
     
     
     constructor(
@@ -40,6 +40,26 @@ export class CategoriasService {
         return categoriaEncontrada
     }
 
+    async consultarCategoriaDoJogador(solicitante: any): Promise<Categoria> {
+        /*
+      Desafio
+      Escopo da exceção realocado para o próprio Categorias Service
+      Verificar se o jogador informado já se encontra cadastrado
+      */
+
+        const jogadores = await this.jogadoresService.consultarTodosJogadores()
+
+        const jogadorFilter = jogadores.filter(jogador => jogador._id == solicitante)
+
+        if( jogadorFilter.length == 0 ){
+            throw new BadRequestException(`O id ${solicitante} não é um jogador`)
+        }
+
+        return await this.categoriaModel.findOne().where('jogadores').in(solicitante).exec()
+
+
+  }
+
     async atualizarCategoria(categoria: string, atualizarCategoriaDto: AtualizarCategoriaDto): Promise<void> {
         await this.buscarCategoria(categoria);
         await this.categoriaModel.findOneAndUpdate( {categoria}, {$set: atualizarCategoriaDto} )
@@ -62,6 +82,18 @@ export class CategoriasService {
 
         await this.categoriaModel.findOneAndUpdate( {categoria},{$set: categoriaEncontrada} ).exec()
 
+    }
+
+    async encontrarCategoriaDoSolicitante(solicitante: Jogador): Promise<Categoria> {
+        
+        return this.categoriaModel.findOne(
+            {
+                jogadores: {
+                    $elemMatch: {
+                        _id: solicitante 
+                    }
+                }
+            })        
     }
 
     private async buscarCategoria(categoria): Promise<Categoria>{

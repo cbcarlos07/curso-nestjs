@@ -36,6 +36,7 @@ export class JogadoresService {
 
     async consultarJogadoresPeloId(_id: string): Promise<Jogador>{
         const jogadorEncontrado = await this.verificaSeJogadorExiste(_id)
+        
         if( !jogadorEncontrado ){
             throw new NotFoundException(`Jogador com id ${_id} não encontrado`)            
         }

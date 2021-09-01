@@ -1,11 +1,12 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CategoriasService } from 'src/categorias/categorias.service';
 import { Jogador } from 'src/jogadores/interfaces/jogador.interface';
 import { JogadoresService } from 'src/jogadores/jogadores.service';
+import { AtribuirDesafioPartidaDto } from './dtos/atribuir-desafio-partida.dto';
 import { DesafioStatus } from './interfaces/desafio-status.enum';
-import { Desafio } from './interfaces/desafio.interface';
+import { Desafio, Partida } from './interfaces/desafio.interface';
 import { AtualizarDesafioDto } from './interfaces/dtos/atualizar-desafio.dto';
 import { CriarDesafioDto } from './interfaces/dtos/criar-desafio.dto';
 
@@ -14,8 +15,10 @@ export class DesafiosService {
     
     
     
+    
     private readonly logger = new Logger(DesafiosService.name)
     constructor(@InjectModel('Desafio') private readonly desafioModel: Model<Desafio>,
+                @InjectModel('Partida') private readonly partidaModel: Model<Partida>,
                 readonly jogadorService: JogadoresService,
                 readonly categoriaService: CategoriasService){}
     
@@ -100,10 +103,7 @@ export class DesafiosService {
     }
 
     async atualizarDesafio(_id: string, atualizarDesafioDto: AtualizarDesafioDto): Promise<void> {
-        const desafioEncontrado =  await this.desafioModel.findById( _id ).exec()
-        if( !desafioEncontrado ){
-            throw new NotFoundException(`Desafio ${_id} não cadastrado`)            
-        }
+        const desafioEncontrado = await this.verificarSeDesafioExiste(_id)
 
         /*
         Atualizamos a data da responsta quando o status do desafio vier preenchido
@@ -116,5 +116,71 @@ export class DesafiosService {
         desafioEncontrado.dataHoraDeafio = atualizarDesafioDto.dataHoraDesafio
 
         await this.desafioModel.findOneAndUpdate({_id}, {$set: desafioEncontrado}).exec()
+    }
+
+    async atribuidDesafioPartida(_id: string, atribuirDesafioPartidaDto: AtribuirDesafioPartidaDto): Promise<void> {
+        const desafioEncontrado = await this.verificarSeDesafioExiste(_id)
+
+        /*
+        Verifica se o jogador vencedor faz parte do deasfio
+        */
+       const jogadorFilter = desafioEncontrado.jogadores.filter( jogador => jogador._id ==  atribuirDesafioPartidaDto.def)
+
+       if( jogadorFilter.length == 0 ){
+           throw new BadRequestException(`O jogador vencedor não faz parte do desafio`)
+       }
+
+       /*
+       Primeiro vamos criar e persistir o objeto partida
+        */
+       const partidaCriada = new this.partidaModel(atribuirDesafioPartidaDto)
+
+       /*
+       Atribuir ao objeto partida a categoria recuperada no desafio
+       */
+      partidaCriada.jogadores = desafioEncontrado.jogadores
+
+      const resultado = await partidaCriada.save()
+
+      /*
+       Quando uma partida for registrada por um usuário, mudaremos o status do desafio para REALIZADO 
+      */
+
+       desafioEncontrado.status = DesafioStatus.REALIZADO
+
+       /*
+       Recuperamos o ID da partida e atribuimos ao desafio
+       */
+       desafioEncontrado.partida = resultado._id
+
+       try {
+           await this.desafioModel.findOneAndUpdate({_id}, {$set: desafioEncontrado}).exec()
+       } catch (error) {
+           /*
+           Se a atualização do desafio falhar excluimos a  partida gravada anteiormente
+           */
+            await this.partidaModel.deleteOne({_id: resultado._id}).exec()
+            throw new InternalServerErrorException()
+           
+       }
+        
+    }
+
+    async deletarDesafio(_id: string): Promise<void>{
+        const desafioEncontrado = await this.verificarSeDesafioExiste( _id )
+        /*
+        Realizaremos a deleção lógica do desafio, modificando seu status para CANCELADO
+        */
+       desafioEncontrado.status = DesafioStatus.CANCELADO
+
+       await this.desafioModel.findOneAndUpdate({_id}, {$set: desafioEncontrado}).exec()
+    }
+
+     private async verificarSeDesafioExiste(_id: string) : Promise<Desafio>{
+        const desafioEncontrado =  await this.desafioModel.findById( _id ).exec()
+        if( !desafioEncontrado ){
+            throw new NotFoundException(`Desafio ${_id} não cadastrado`)            
+        }
+        return desafioEncontrado
     }
 }

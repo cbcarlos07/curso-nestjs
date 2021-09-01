@@ -1,6 +1,11 @@
 # Curso de Node.js Microservices: NestJS, RabbitMQ and Cloud Services
 
 https://www.udemy.com/share/1031xw/
+
+Link do repositório original
+
+https://gitlab.com/dfs-treinamentos/smart-ranking/api-smartranking-backend/-/tree/aula-1
+
 ## Comandos Nest
 
 * Criar Módulo

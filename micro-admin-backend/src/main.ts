@@ -9,7 +9,8 @@ async function bootstrap() {
 		{
 			transport: Transport.RMQ,
 			options: {
-			 	urls: ['amqps://ipdv:ipdvonline2021@b-c33ff9e9-6093-4032-a97c-286274b56c3a.mq.us-east-1.amazonaws.com:5671/smartranking'],
+			 	//urls: ['amqps://ipdv:ipdvonline2021@b-c33ff9e9-6093-4032-a97c-286274b56c3a.mq.us-east-1.amazonaws.com:5671/smartranking'],
+			 	urls: ['amqp://localhost'],
 				queue: 'admin-backend' 
 		}
 	});

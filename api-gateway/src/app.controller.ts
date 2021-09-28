@@ -2,7 +2,8 @@ import { Body, Controller, Get, Logger, Post, Query, UsePipes, ValidationPipe } 
 import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices'
 import { Observable } from 'rxjs';
 import { CriarCategoriaDto } from './dtos/criar-categoria.dto';
-
+//const URL = 'amqps://ipdv:ipdvonline2021@b-c33ff9e9-6093-4032-a97c-286274b56c3a.mq.us-east-1.amazonaws.com:5671/smartranking'
+const URL = 'amqp://localhost/smartranking'
 @Controller('api/v1')
 export class AppController {
 	private logger = new Logger(AppController.name)
@@ -13,12 +14,13 @@ export class AppController {
 		this.clientAdminBackend = ClientProxyFactory.create({
 			transport: Transport.RMQ,
 			options: {
-				//urls: ['amqps://ipdv:ipdvonline2021@b-c33ff9e9-6093-4032-a97c-286274b56c3a.mq.us-east-1.amazonaws.com:5671/smartranking'],
-				urls: ['amqp://localhost'],
+				urls: [URL],
 				queue: 'admin-backend'
 			}
 		})
 	}
+	
+	async onApplicationBootstrap() { await this.clientAdminBackend.connect();}
 
 	@Post('categorias')
 	@UsePipes(ValidationPipe)

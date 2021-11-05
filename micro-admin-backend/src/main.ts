@@ -11,6 +11,7 @@ async function bootstrap() {
 			transport: Transport.RMQ,
 			options: {
 			 	urls: [URL],
+                noAck: false,
 				queue: 'admin-backend' 
 		}
 	});
